@@ -1,9 +1,0 @@
-
-
-function init(self)
-	--msg.post(".", "testme")
-	--msg.post("@system:", "toggle_profile")
---go.animate("/logo", "position.x", go.PLAYBACK_LOOP_PINGPONG, 750, go.EASING_INOUTCIRC, 2)
-	uwebsockets.start_server()
-end
-
