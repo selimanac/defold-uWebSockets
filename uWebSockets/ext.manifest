@@ -1,0 +1,8 @@
+name: "uWebSockets"
+
+platforms:
+
+ x86_64-osx:
+  context:
+   flags:      ["-stdlib=libc++"]
+   libs:       ["z","c++"]
