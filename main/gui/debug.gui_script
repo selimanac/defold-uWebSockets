@@ -1,0 +1,26 @@
+local status_text
+local ping_text
+
+local status_update = hash("update_status")
+local ping_update = hash("update_ping")
+
+local function update_status(txt)
+	gui.set_text(status_text, txt)
+end
+
+local function update_ping(txt)
+	gui.set_text(ping_text, txt)
+end
+
+function init(self)
+	status_text = gui.get_node("status_txt")
+	ping_text = gui.get_node("ping_txt")
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == status_update then
+		update_status(message.status)
+	elseif message_id == ping_update then
+		update_ping(message.status)
+	end
+end
