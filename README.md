@@ -9,8 +9,9 @@ Testing on MacOS 10.14.3, iOS 9.3.5
 ### Known problems  
 
 - Currently MacOS and iOS only. Not support Windows and Android yet.
-- Using SSL (wss) cause crash
-- Not tested with 64 bit iOS devices
+- Using SSL (wss) cause crash.
+- Not tested with 64 bit iOS devices.
+- Sudden disconnection from server may cause crash on iOS.
 
 ------
 
