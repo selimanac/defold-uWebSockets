@@ -121,7 +121,7 @@ static void InvokeCallback(LuaCallbackInfo *cbk, MessageCommand *cmd)
     -array - element -*/
     lua_createtable(L, 0, 0); // Main Table
 
-    // Event ID and Protocol used for game server like Colyseus
+    // Event ID is for client status. Protocol id used for server like Colyseus
     lua_pushnumber(L, cmd->m_Event_Id);
     lua_setfield(L, -2, "event_id");
 
