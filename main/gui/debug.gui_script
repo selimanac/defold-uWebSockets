@@ -9,6 +9,7 @@ local function update_status(txt)
 end
 
 local function update_ping(txt)
+	txt = txt * 1000 .. " ms"
 	gui.set_text(ping_text, txt)
 end
 
