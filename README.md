@@ -1,8 +1,8 @@
 # Defold uWebsockets
 
-**Caution!** Under heavy development.
+_**Caution!** Under heavy development._
 
-This project is build using [uWebsockets 0.14](https://github.com/uNetworking/uWebSockets/tree/v0.14) and its dependencies. 
+This project is build by using [uWebsockets 0.14](https://github.com/uNetworking/uWebSockets/tree/v0.14) and its dependencies. 
 
 Testing on MacOS 10.14.3, iOS 9.3.5
 
@@ -10,7 +10,7 @@ Testing on MacOS 10.14.3, iOS 9.3.5
 
 - Currently MacOS and iOS only. Not support Windows and Android yet.
 - Using SSL (wss) cause crash.
-- Not tested with 64 bit iOS devices.
+- Not tested with 64 bit iOS devices yet.
 
 ------
 
