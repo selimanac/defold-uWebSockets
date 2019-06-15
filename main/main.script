@@ -1,7 +1,7 @@
 -- SERVER VARS
 --local server_adress = "192.168.1.7"
 --local server_port = "1111"
---local room_name = "ws" -- "Room name" 
+--local room_name = "ws" -- "Room name"
 
 -- SERVER VARS
 --[[local server_adress = "demos.kaazing.com"
@@ -9,15 +9,14 @@ local server_port = "80"
 local room_name = "echo" -- "Room name"
 ]]
 -- -- SERVER VARS
- local server_adress = "echo.websocket.org"
- local server_port = "80"
- local room_name = "" -- "Room name"
+local server_adress = "echo.websocket.org"
+local server_port = "80"
+local room_name = "" -- "Room name"
 
 --[[ -- SERVER VARS
 local server_adress = "95.85.42.212" 
 local server_port = "7171"
 local room_name = "ws" -- "Room name" ]]
-
 -- VARS
 local isConnected = false
 local debug_gui = "/gui#debug_gui"
@@ -76,24 +75,17 @@ function init(self)
 	print("Server: ws://" .. server_adress .. ":" .. server_port .. "/" .. room_name)
 	send_status("CONNECTING")
 
-	uwebsockets.connect(
-		"ws://" .. server_adress .. ":" .. server_port .. "/" .. room_name,
-		"general",
-		general_callbacks,
-		2000
-	)
+	uwebsockets.connect("ws://" .. server_adress .. ":" .. server_port .. "/" .. room_name, "general", general_callbacks, 2000)
 	msg.post(".", "acquire_input_focus")
 end
 
 function on_input(self, action_id, action)
 	if action.pressed then
 		isTouched = true
-	end
-	if action.released then
+	elseif action.released then
 		isTouched = false
 	end
 	if isConnected then
-		-- repeat_interval and repeat_delay are edited in game.project. Don't send 60fps, It may cause disconnection :)
 		if action_id == hash("touch") and isConnected then --and action.repeated
 			send_pos.x = action.x
 			send_pos.y = action.y
@@ -107,9 +99,6 @@ end
 
 function update(self, dt)
 	if isConnected and isTouched then
-		uwebsockets.send(
-			"general",
-			'{"time":' .. socket.gettime() .. ' ,"pos":{"y":' .. send_pos.y .. ',"x":' .. send_pos.x .. "}}"
-		)
+		uwebsockets.send("general", '{"time":' .. socket.gettime() .. ' ,"pos":{"y":' .. send_pos.y .. ',"x":' .. send_pos.x .. "}}")
 	end
 end

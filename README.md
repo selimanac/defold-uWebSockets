@@ -4,14 +4,13 @@ _**Caution!** Under heavy development._
 
 This project is build by using [uWebsockets 0.14](https://github.com/uNetworking/uWebSockets/tree/v0.14) and its dependencies. 
 
-Testing on MacOS 10.14.3, iOS 9.3.5
+Currently testing on MacOS 10.14.3, iOS 9.3.5
 
 ### Known issues  
 
-- Currently MacOS and iOS only. Not support Windows and Android yet.
+- MacOS and iOS only. Windows and Android not supported yet. 
 - Using SSL (wss) cause crash.
 - Not tested with 64 bit iOS devices yet.
-- 
 
 ------
 
