@@ -1,7 +1,22 @@
 -- SERVER VARS
-local server_adress = "demos.kaazing.com"
+--local server_adress = "192.168.1.7"
+--local server_port = "1111"
+--local room_name = "ws" -- "Room name" 
+
+-- SERVER VARS
+--[[local server_adress = "demos.kaazing.com"
 local server_port = "80"
 local room_name = "echo" -- "Room name"
+]]
+-- -- SERVER VARS
+ local server_adress = "echo.websocket.org"
+ local server_port = "80"
+ local room_name = "" -- "Room name"
+
+--[[ -- SERVER VARS
+local server_adress = "95.85.42.212" 
+local server_port = "7171"
+local room_name = "ws" -- "Room name" ]]
 
 -- VARS
 local isConnected = false
@@ -11,6 +26,9 @@ local ws_message = {}
 local pos = vmath.vector3(0, 0, 0)
 local set_position = go.set_position
 local vector3 = vmath.vector3
+local isTouched = false
+
+local send_pos = vmath.vector3(0, 0, 0)
 
 -- Messages to Debug GUI
 local function send_status(txt)
@@ -29,21 +47,24 @@ end
 -- Lua Callbacks
 local function general_callbacks(self, message)
 	if uwebsockets.ON_ERROR == message.event_id then
+		print("ON_ERROR")
 		send_status("ERROR")
 		isConnected = false
 	elseif uwebsockets.ON_CONNECTION == message.event_id then
 		send_status("CONNECTED")
 		isConnected = true
 	elseif uwebsockets.ON_MESSAGE == message.event_id then
+		--	print("ON_MESSAGE")
 		send_status("MESSAGE")
-		ws_message = json.decode(message.json)
-
-		ping = socket.gettime() - ws_message.time
-		send_ping(ping)
-
-		pos = vector3(ws_message.pos.x, ws_message.pos.y, 1)
-		set_position(pos, "logo")
+		if message.json ~= nil then
+			ws_message = json.decode(message.json)
+			ping = socket.gettime() - ws_message.time
+			send_ping(ping)
+			pos = vector3(ws_message.pos.x, ws_message.pos.y, 1)
+			set_position(pos, "logo")
+		end
 	elseif uwebsockets.ON_DISCONNECT == message.event_id then
+		print("ON_DISCONNECT")
 		send_status("DISCONNECT")
 		isConnected = false
 		close_connection("general")
@@ -51,6 +72,7 @@ local function general_callbacks(self, message)
 end
 
 function init(self)
+	msg.post("@system:", "set_update_frequency", {frequency = 15})
 	print("Server: ws://" .. server_adress .. ":" .. server_port .. "/" .. room_name)
 	send_status("CONNECTING")
 
@@ -58,19 +80,36 @@ function init(self)
 		"ws://" .. server_adress .. ":" .. server_port .. "/" .. room_name,
 		"general",
 		general_callbacks,
-		1000
+		2000
 	)
 	msg.post(".", "acquire_input_focus")
 end
 
 function on_input(self, action_id, action)
+	if action.pressed then
+		isTouched = true
+	end
+	if action.released then
+		isTouched = false
+	end
 	if isConnected then
 		-- repeat_interval and repeat_delay are edited in game.project. Don't send 60fps, It may cause disconnection :)
-		if action_id == hash("touch") and action.repeated and isConnected then
-			uwebsockets.send(
+		if action_id == hash("touch") and isConnected then --and action.repeated
+			send_pos.x = action.x
+			send_pos.y = action.y
+		--[[ uwebsockets.send(action.x
 				"general",
 				'{"time":' .. socket.gettime() .. ' ,"pos":{"y":' .. action.y .. ',"x":' .. action.x .. "}}"
-			)
+			) ]]
 		end
+	end
+end
+
+function update(self, dt)
+	if isConnected and isTouched then
+		uwebsockets.send(
+			"general",
+			'{"time":' .. socket.gettime() .. ' ,"pos":{"y":' .. send_pos.y .. ',"x":' .. send_pos.x .. "}}"
+		)
 	end
 end

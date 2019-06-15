@@ -13,10 +13,12 @@ Connection::Connection()
 //Destructor
 Connection::~Connection()
 {
-   // If connected close the connection
+    //TODO: empty QueueCommands
+
+    // If connected close the connection
     if (isConnected)
     {
-        client->close();
+        client->terminate();
     }
     //Join the thread
     if (uws_thread->joinable())
@@ -30,9 +32,12 @@ Connection::~Connection()
 
 void Connection::send(lua_State *L)
 {
-    DM_LUA_STACK_CHECK(L, 0);
-    const char *msg = luaL_checkstring(L, 2);
-    client->send(msg);
+    if (isConnected)
+    {
+        DM_LUA_STACK_CHECK(L, 0);
+        const char *msg = luaL_checkstring(L, 2);
+        client->send(msg, strlen(msg), opcode);
+    }
 }
 
 //Join Room
@@ -47,6 +52,10 @@ void Connection::close()
     this->~Connection();
 }
 
+bool Connection::connected()
+{
+    return isConnected;
+}
 //Connect to WS
 void Connection::connect(std::string conn_name)
 {
@@ -65,8 +74,11 @@ void Connection::uwsthread()
     //New Hub
     Hub h;
 
+    std::mutex holdUp;
+
     //OnError
     h.onError([this](void *user) {
+        dmLogInfo("H -> onError");
         //Set connection false
         isConnected = false;
         //Invoke callback
@@ -74,7 +86,7 @@ void Connection::uwsthread()
     });
 
     //OnConnection
-    h.onConnection([this](uWS::WebSocket<uWS::CLIENT> *ws, uWS::HttpRequest req) { 
+    h.onConnection([this](uWS::WebSocket<uWS::CLIENT> *ws, uWS::HttpRequest req) {
         //Assign to cliect
         client = ws;
         //Set connection true
@@ -84,30 +96,44 @@ void Connection::uwsthread()
     });
 
     //OnMessage
-    h.onMessage([this](uWS::WebSocket<uWS::CLIENT> *ws, char *message, size_t length, uWS::OpCode opCode) {
-      
-        if (message != nullptr)
+    h.onMessage([this, &holdUp](uWS::WebSocket<uWS::CLIENT> *ws, char *message, size_t length, uWS::OpCode opCode) {
+        holdUp.lock();
+        dmLogInfo("H -> onMessage");
+        dmLogInfo(message);
+        if (message != nullptr || message != NULL)
         {
-            message[length] = '\0';
-        } else {
-            message = "There is a problem. Are you sending to fast???";
+            message[length] = '\0'; //"\uFFFD"
+
+            msgcontainer->roomname = "RoomName";
+            msgcontainer->jsonstring = message;
+
+            QueueCommand(Connection::id, Events::ON_MESSAGE, Protocols::ROOM_STATE_PATCH, msgcontainer);
+        }
+        else
+        {
+            dmLogInfo("5- Null geldi");
         }
 
-        msgcontainer->roomname = "RoomName";
-        msgcontainer->jsonstring = message;
-
-        QueueCommand(Connection::id, Events::ON_MESSAGE, Protocols::ROOM_STATE_PATCH, msgcontainer);
+        holdUp.unlock();
     });
 
     //OnDisconnection
-    h.onDisconnection([this](uWS::WebSocket<uWS::CLIENT> *ws, int code, char *message, size_t length) {
+    h.onDisconnection([this, &holdUp](uWS::WebSocket<uWS::CLIENT> *ws, int code, char *message, size_t length) {
+        holdUp.lock();
+        dmLogInfo("H -> onDisconnection");
+
+        std::string numStr = std::to_string(code);
+        dmLogInfo(numStr.c_str());
+
         isConnected = false;
         QueueCommand(Connection::id, Events::ON_DISCONNECT, 0, nullptr);
+        holdUp.unlock();
     });
 
     //Connect to WS with time out
     h.connect(ws_url, nullptr, {}, ws_timeout);
     h.run();
+    h.poll();
 }
 
 } // namespace duws

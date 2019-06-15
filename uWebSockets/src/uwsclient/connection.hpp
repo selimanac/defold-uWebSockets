@@ -49,6 +49,7 @@ public:
   unsigned int ws_timeout;
   //Connection ID
   size_t id;
+  bool connected();
 
 private:
   //Parser Class

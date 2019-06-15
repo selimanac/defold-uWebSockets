@@ -1,6 +1,7 @@
 [project]
 title = defold-uWebSockets
 version = 0.1
+dependencies = https://github.com/britzl/defold-metrics/archive/master.zip
 
 [bootstrap]
 main_collection = /main/main.collectionc
@@ -8,12 +9,12 @@ main_collection = /main/main.collectionc
 [input]
 game_binding = /input/game.input_bindingc
 use_accelerometer = 0
-repeat_interval = 0.1
-repeat_delay = 0.1
 
 [display]
 width = 640
 height = 1136
+vsync = 0
+update_frequency = 15
 
 [ios]
 app_icon_120x120 = /assets/app_icons/icon_120.png
@@ -56,7 +57,4 @@ input_method = HiddenInputField
 
 [script]
 shared_state = 1
-
-[native_extension]
-app_manifest = /generated.appmanifest
 

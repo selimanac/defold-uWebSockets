@@ -62,7 +62,7 @@ struct ConnectionState
 
 ConnectionState *g_Conn = 0;
 
-void QueueCommand(int id, int event_id, int protocol_id, duws::MsgContainer* ws_message)
+void QueueCommand(int id, int event_id, int protocol_id, duws::MsgContainer *ws_message)
 {
     MessageCommand cmd;
     cmd.m_Id = id;
@@ -99,11 +99,15 @@ static void RegisterCallback(lua_State *L, int index, LuaCallbackInfo *cbk)
 
 static void InvokeCallback(LuaCallbackInfo *cbk, MessageCommand *cmd)
 {
+   
+   m.lock();
+
     if (cbk->m_Callback == LUA_NOREF)
     {
         dmLogInfo("2-LUA_NOREF");
         return;
     }
+   
 
     lua_State *L = cbk->m_L;
     DM_LUA_STACK_CHECK(L, 0);
@@ -114,7 +118,7 @@ static void InvokeCallback(LuaCallbackInfo *cbk, MessageCommand *cmd)
 
     dmScript::SetInstance(L);
 
-    ConnCallback *ad = &g_Conn->m_Connections[cmd->m_Id];
+   // ConnCallback *ad = &g_Conn->m_Connections[cmd->m_Id];
 
     /*
     Main Table
@@ -127,13 +131,25 @@ static void InvokeCallback(LuaCallbackInfo *cbk, MessageCommand *cmd)
 
     lua_pushnumber(L, cmd->m_Protocol_Id);
     lua_setfield(L, -2, "protocol_id");
-   
-    if (cmd->m_Protocol_Id == Protocols::ROOM_STATE_PATCH)
-    {
-        lua_pushstring(L, cmd->m_ws_message->jsonstring);
-        lua_setfield(L, -2, "json");   
-    }
 
+   
+
+    //DEBUG
+    std::string numStr = std::to_string(cmd->m_Event_Id);
+  
+
+    if (cmd->m_Event_Id == Events::ON_MESSAGE)
+    {
+       
+        if (conncontainer["general"]->connected() == true)
+        {
+          
+            
+            lua_pushstring(L, cmd->m_ws_message->jsonstring);
+            lua_setfield(L, -2, "json");
+        }
+    }
+  
     int number_of_arguments = 2; // instance + 1
     int ret = lua_pcall(L, number_of_arguments, 0, 0);
     if (ret != 0)
@@ -141,12 +157,15 @@ static void InvokeCallback(LuaCallbackInfo *cbk, MessageCommand *cmd)
         dmLogError("Error running callback: %s", lua_tostring(L, -1));
         lua_pop(L, 1);
     }
+  m.unlock();
 }
 
 static void FlushCommandQueue()
 {
+
     for (uint32_t i = 0; i != g_Conn->m_CmdQueue.Size(); ++i)
     {
+    
         MessageCommand *cmd = &g_Conn->m_CmdQueue[i];
         ConnCallback &ad = g_Conn->m_Connections[cmd->m_Id];
 
@@ -198,6 +217,10 @@ void uwsjoin(std::string name, std::string room)
 
 void uwssend(std::string name, lua_State *L)
 {
+    if (conncontainer[name]->connected() == false)
+    {
+        return;
+    }
 
     if (conncontainer.count(name))
     {
