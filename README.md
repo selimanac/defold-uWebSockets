@@ -8,8 +8,8 @@ Currently testing on MacOS 10.14.3, iOS 9.3.5
 
 ### Known issues  
 
-- MacOS and iOS only. Windows and Android not supported yet. 
-- Using SSL (wss) cause crash.
+- MacOS and iOS only. Windows, Linux and Android not supported yet. Libraries need to build for those platforms.
+- Using SSL (wss) cause crash. OpenSSL cause this.
 - Not tested with 64 bit iOS devices yet.
 
 ------
