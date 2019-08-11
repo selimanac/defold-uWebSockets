@@ -1,6 +1,6 @@
 # Defold uWebsockets
 
-_**Caution!** Under heavy development._
+_**Caution!** Not developing anymore._
 
 This project is build by using [uWebsockets 0.14](https://github.com/uNetworking/uWebSockets/tree/v0.14) and its dependencies. 
 
